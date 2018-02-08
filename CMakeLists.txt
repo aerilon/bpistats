@@ -16,13 +16,7 @@ endif()
 
 set(Boost_USE_STATIC_LIBS on)
 find_package(
-        Boost "1.66.0"
-        REQUIRED COMPONENTS
-        program_options
-        regex
-        system
-        thread
-        unit_test_framework
+        Boost "1.64.0"
 )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -33,8 +27,12 @@ file(GLOB SOURCES src/*.cpp src/*.hpp)
 
 add_executable(bpistats ${SOURCES})
 
+target_link_libraries(bpistats
+	boost_program_options)
+
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpistats
+		stdc++fs
 		pthread
 		rt)
 endif()
