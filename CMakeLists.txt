@@ -17,6 +17,9 @@ endif()
 set(Boost_USE_STATIC_LIBS on)
 find_package(
         Boost "1.64.0"
+	REQUIRED COMPONENTS
+	filesystem
+	system
 )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})

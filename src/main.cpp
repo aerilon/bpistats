@@ -42,6 +42,12 @@ namespace std
 }
 #elif __has_include("filesystem")
 #include <filesystem>
+#elif __has_include("boost/filesystem.hpp")
+#include <boost/filesystem.hpp>
+namespace std
+{
+	namespace filesystem = ::boost::filesystem;
+}
 #endif
 
 void
