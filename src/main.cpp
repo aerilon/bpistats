@@ -6,6 +6,11 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 
+namespace
+{
+	const std::string COINDESK_FIRST_RECORD("2010-07-17");
+}
+
 class Main
 {
 public:
@@ -28,10 +33,78 @@ Main::Main(int argc, const char** argv) :
 	this->parse_options(argc, argv);
 }
 
+#include <sstream>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 void
 Main::check_range_options(const std::vector<std::string>& ranges)
 {
-	std::cout << ranges.size() << std::endl;
+	class date_parser
+	{
+	public:
+		date_parser(const std::string& format)
+		{
+			// XXX al - pointer freed by std::~locale()
+			this->ss.imbue(std::locale(std::locale(),
+			    new boost::posix_time::time_input_facet(format.c_str())));
+		}
+
+		std::pair<bool, boost::posix_time::ptime>
+		operator()(const std::string& text)
+		{
+			boost::posix_time::ptime pt;
+
+			this->ss.clear();
+			this->ss << text;
+
+			ss >> pt;
+
+			return std::make_pair(!pt.is_not_a_date_time(), pt);
+		}
+
+	private:
+		std::stringstream ss;
+	};
+	date_parser parse("%Y-%m-%d");
+
+	[[maybe_unused]] auto [ok, coindesk_fist_record] = parse(COINDESK_FIRST_RECORD);
+	(void)ok; // XXX al - previous attributes only works in gcc >7.2
+
+	auto log_and_throw = [](const std::string& message, const std::string& range)
+	{
+		std::stringstream ss;
+		ss << message << ": " << range;
+		std::cerr << ss.str() << std::endl;
+		throw boost::program_options::validation_error(
+		      boost::program_options::validation_error::invalid_option_value,
+		      "--range", ss.str());
+	};
+
+	for (auto& range : ranges)
+	{
+		auto comma = range.find(',');
+		if (comma == std::string::npos)
+		{
+			log_and_throw("Missing comma separator", range);
+		}
+
+		auto [begin_ok, begin] = parse(range.substr(0, comma));
+		auto [end_ok, end] = parse(range.substr(comma + 1, std::string::npos));
+		if (!begin_ok || !end_ok)
+		{
+			log_and_throw("Error raised during date conversion", range);
+		}
+
+		if (end < begin)
+		{
+			log_and_throw("Range ends before it begins", range);
+		}
+
+		if (begin < coindesk_fist_record)
+		{
+			log_and_throw("First record asked predate Coindesk first record", range);
+		}
+	}
 }
 
 #if __has_include("experimental/filesystem")
