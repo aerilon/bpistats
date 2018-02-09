@@ -2,6 +2,9 @@
 
 #include <mutex>
 
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+
 #include <date_parser.hpp>
 #include <records.hpp>
 

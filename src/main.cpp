@@ -20,8 +20,6 @@ namespace std
 
 #include <boost/asio/io_service.hpp>
 
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 
 #include <boost/property_tree/ptree.hpp>
@@ -232,19 +230,4 @@ main::operator()()
 	io_service.run();
 }
 
-}
-
-int
-main(int argc, const char** argv)
-{
-	try
-	{
-		bpi::main(argc, argv)();
-	}
-	catch (std::exception &e)
-	{
-		std::cout << "uncaught exception: " << e.what() << std::endl;
-	}
-
-	return 0;
 }

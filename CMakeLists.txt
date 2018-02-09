@@ -32,11 +32,18 @@ project(bpistats)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-file(GLOB SOURCES src/*.cpp src/*.hpp)
+set(BPISTATS_SOURCES "${PROJECT_SOURCE_DIR}/src/bpistats.cpp")
 
-add_executable(bpistats ${SOURCES})
+file(GLOB SOURCES src/*.cpp src/*.hpp)
+list(REMOVE_ITEM SOURCES "${BPISTATS_SOURCES}")
+
+add_library(bpicore STATIC ${SOURCES})
+
+# Main executable
+add_executable(bpistats "${BPISTATS_SOURCES}")
 
 target_link_libraries(bpistats
+	bpicore
 	${Boost_LIBRARIES})
 
 if (UNIX AND NOT APPLE)
