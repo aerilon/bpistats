@@ -156,6 +156,16 @@ main::parse_options(int argc, const char** argv)
 }
 
 void
+main::print(const boost::property_tree::ptree& tree)
+{
+	std::stringstream ss;
+	boost::property_tree::write_json(ss, tree);
+
+	std::lock_guard<std::mutex> lk(this->print_lock);
+	std::cout << ss.str() << std::endl;
+}
+
+void
 main::operator()()
 {
 	if (this->vm.count("help"))

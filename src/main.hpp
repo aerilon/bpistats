@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include <date_parser.hpp>
 #include <records.hpp>
 
@@ -18,6 +20,8 @@ private:
 	void range_option_notifier(const std::vector<std::string>&);
 	void file_option_notifier(const std::vector<std::string>&);
 
+	void print(const boost::property_tree::ptree&);
+
 	boost::program_options::options_description desc;
 	boost::program_options::variables_map vm;
 
@@ -25,6 +29,8 @@ private:
 
 	std::vector<bpi::records::file> file_records;
 	std::vector<bpi::records::online> online_records;
+
+	std::mutex print_lock;
 };
 
 }
