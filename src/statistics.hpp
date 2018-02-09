@@ -16,12 +16,6 @@ public:
 
 private:
 	const bpi::records::map_t& map;
-
-	long double lowest;
-	long double highest;
-	long double median;
-	long double mean;
-	long double stddev;
 };
 
 }
