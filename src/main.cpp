@@ -64,7 +64,7 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 {
 
 	[[maybe_unused]] auto [ok, coindesk_fist_record] = this->parser(COINDESK_FIRST_RECORD);
-	(void)ok; // XXX al - previous attributes only works in gcc >7.2
+	(void)ok; // XXX al - [[maybe_unused]] only works with structured bindings in gcc >7.2
 
 	// XXX slightly different than the above, mainly due to the different exception prototype
 	auto log_and_throw = [](const std::string& message, const std::string& range)
@@ -79,6 +79,7 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 
 	for (auto& range : ranges)
 	{
+		// Integrity check
 		auto comma = range.find(',');
 		if (comma == std::string::npos)
 		{
@@ -102,8 +103,8 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 			log_and_throw("First record asked predate Coindesk first record", range);
 		}
 
-		this->online_records.emplace_back(COINDESK_HISTORICAL_CLOSE_JSON_API,
-		    from, to);
+		// create the record
+		this->online_records.emplace_back(COINDESK_HISTORICAL_CLOSE_JSON_API, from, to);
 	}
 }
 
