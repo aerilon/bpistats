@@ -7,6 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
+#include <boost/asio/ssl/rfc2818_verification.hpp>
+
 #include <network_session.hpp>
 
 namespace bpi::network
@@ -30,6 +32,8 @@ session::run(const std::string& host, const std::string& port, const std::string
 		this->handler(ec, "");
 		return;
 	}
+
+	this->host = host; // for SSL setup
 
 	// Set up an HTTP GET request message
 	this->request.version(11);
@@ -72,6 +76,10 @@ session::on_connect(boost::system::error_code ec)
 		this->handler(ec, "");
 		return;
 	}
+
+	// Setup peer verification method
+	this->stream.set_verify_mode(boost::asio::ssl::verify_peer);
+	this->stream.set_verify_callback(boost::asio::ssl::rfc2818_verification(this->host));
 
 	// Perform the SSL handshake
 	this->stream.async_handshake(
