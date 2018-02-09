@@ -14,15 +14,19 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     add_compile_options(-Wpedantic)
 endif()
 
-set(Boost_USE_STATIC_LIBS on)
+set(Boost_USE_STATIC_LIBS   ON)
+
 find_package(
-        Boost "1.64.0"
+        Boost "1.66.0"
 	REQUIRED COMPONENTS
 	filesystem
+	program_options
 	system
 )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+set(CMAKE_EXE_LINKER_FLAGS "-L ${Boost_LIBRARY_DIRS}")
 
 project(bpistats)
 
@@ -33,8 +37,7 @@ file(GLOB SOURCES src/*.cpp src/*.hpp)
 add_executable(bpistats ${SOURCES})
 
 target_link_libraries(bpistats
-	boost_program_options
-	boost_system)
+	${Boost_LIBRARIES})
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpistats
