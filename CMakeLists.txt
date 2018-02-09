@@ -52,6 +52,14 @@ if (UNIX AND NOT APPLE)
 		stdc++fs
 		pthread
 		rt)
+
+	add_custom_command(
+		TARGET bpistats
+		POST_BUILD
+		COMMAND objcopy --only-keep-debug ${PROJECT_BINARY_DIR}/bpistats ${PROJECT_BINARY_DIR}/bpistats.symbols
+		COMMAND strip --strip-debug --strip-unneeded ${PROJECT_BINARY_DIR}/bpistats
+		COMMAND objcopy --add-gnu-debuglink ${PROJECT_BINARY_DIR}/bpistats.symbols ${PROJECT_BINARY_DIR}/bpistats
+	)
 endif()
 
 # Tests
