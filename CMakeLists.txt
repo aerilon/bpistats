@@ -29,6 +29,10 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 set(CMAKE_EXE_LINKER_FLAGS "-L ${Boost_LIBRARY_DIRS}")
 
+# Check support for interprocedural optimization (aka. LTO)
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT error)
+
 project(bpistats)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -46,6 +50,11 @@ add_executable(bpistats "${BPISTATS_SOURCES}")
 target_link_libraries(bpistats
 	bpicore
 	${Boost_LIBRARIES})
+if (ipo_supported)
+	set_property(TARGET bpicore PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+	set_property(TARGET bpistats PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpistats
@@ -69,5 +78,9 @@ add_executable(bpitests ${TEST_SOURCES})
 
 target_link_libraries(bpitests
 	bpicore)
+
+if (ipo_supported)
+	set_property(TARGET bpitests PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 enable_testing()
