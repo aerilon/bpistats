@@ -2,6 +2,8 @@
 
 #include <mutex>
 
+#include <boost/asio/io_service.hpp>
+
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 
@@ -26,6 +28,8 @@ private:
 	void populate_records(const boost::property_tree::ptree&, bpi::records::map_t&);
 
 	void print(const boost::property_tree::ptree&);
+
+	boost::asio::io_service io_service;
 
 	boost::program_options::options_description desc;
 	boost::program_options::variables_map vm;

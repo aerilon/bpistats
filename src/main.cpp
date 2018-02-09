@@ -18,8 +18,6 @@ namespace std
 }
 #endif
 
-#include <boost/asio/io_service.hpp>
-
 #include <boost/program_options/parsers.hpp>
 
 #include <boost/property_tree/ptree.hpp>
@@ -199,8 +197,6 @@ main::operator()()
 		return;
 	}
 
-	boost::asio::io_service io_service;
-
 	for (auto& records : this->file_records)
 	{
 		auto worker = [&]()
@@ -216,7 +212,7 @@ main::operator()()
 			this->print(results);
 			};
 
-		io_service.post(worker);
+		this->io_service.post(worker);
 	}
 
 	if (this->vm.count("range"))
@@ -227,7 +223,7 @@ main::operator()()
 		}
 	}
 
-	io_service.run();
+	this->io_service.run();
 }
 
 }
