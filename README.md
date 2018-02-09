@@ -7,8 +7,9 @@ retrieved locally or fetched from Coindesk API.
 
 ### Requirements
 
- - C++17 compiler
- - Boost 1.66.0
+ - cmake (>= 3.9)
+ - C++17 compiler (g++ >= 7)
+ - Boost (>= 1.66.0)
 
 ### Steps
 
@@ -96,3 +97,4 @@ Example:
  - fix known caveats
  - implement a client/server interface
  - enable multithreaded operations
+ - check support for visual studio
