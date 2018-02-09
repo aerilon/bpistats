@@ -85,6 +85,7 @@ Example:
 
  - OS X (with latest Xcode)
  - Fedora 27
+ - Ubuntu 17.10
 
 ## Caveats
 
