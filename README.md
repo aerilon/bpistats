@@ -98,3 +98,4 @@ Example:
  - implement a client/server interface
  - enable multithreaded operations
  - check support for visual studio
+ - configurable coindesk endpoint
