@@ -20,6 +20,8 @@ private:
 	void range_option_notifier(const std::vector<std::string>&);
 	void file_option_notifier(const std::vector<std::string>&);
 
+	void populate_records(const boost::property_tree::ptree&, bpi::records::map_t&);
+
 	void print(const boost::property_tree::ptree&);
 
 	boost::program_options::options_description desc;

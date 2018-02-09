@@ -36,6 +36,23 @@ namespace
 	const std::string COINDESK_FIRST_RECORD("2010-07-17");
 }
 
+/*
+ * There is no elegant way in C++ to pass a streamstream as a method parameter, short of having the
+ * method accept a reference and have a cumbersome temorary to manipulate, ie. have the following
+ * syntax:
+ *
+ * fn("key: " << val << "key: << 1);
+ *
+ * thus we have to resort to a good old C macro.
+ */
+#define LOG_AND_THROW(msg, exception)			\
+{							\
+	std::stringstream ss;				\
+	ss << msg;					\
+	std::cerr << ss.str() << std::endl;		\
+	throw (exception(ss.str()));			\
+}
+
 namespace bpi
 {
 
@@ -53,6 +70,7 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 	[[maybe_unused]] auto [ok, coindesk_fist_record] = this->parser(COINDESK_FIRST_RECORD);
 	(void)ok; // XXX al - previous attributes only works in gcc >7.2
 
+	// XXX slightly different than the above, mainly due to the different exception prototype
 	auto log_and_throw = [](const std::string& message, const std::string& range)
 	{
 		std::stringstream ss;
@@ -99,6 +117,7 @@ main::file_option_notifier(const std::vector<std::string>& files)
 
 	for (auto& file : files)
 	{
+		// Integrity check.
 		if (!std::filesystem::exists(file) && !std::filesystem::is_regular_file(file))
 		{
 			throw boost::program_options::validation_error(
@@ -106,31 +125,38 @@ main::file_option_notifier(const std::vector<std::string>& files)
 			      "--file", file);
 		}
 
+		// Load the JSON file, ...
 		boost::property_tree::ptree root;
-
 		boost::property_tree::read_json(file, root);
 
-		auto& collection = this->file_records.emplace_back(file);
-		auto& map = collection.get();
+		// create the record, ...
+		auto& record = this->file_records.emplace_back(file);
 
-		auto data = root.get_child("bpi");
+		// and populate our internal representation.
+		this->populate_records(root, record.get());
+	}
+}
 
-		for(const auto& node : data)
+void
+main::populate_records(const boost::property_tree::ptree& root,
+    bpi::records::map_t& map)
+{
+	auto data = root.get_child("bpi");
+
+	for (const auto& node : data)
+	{
+		auto [ok, pt] = this->parser(node.first);
+		if (!ok)
 		{
-			auto [ok, pt] = this->parser(node.first);
-			if (!ok)
-			{
-				// FIXME
-				throw std::exception();
-			}
+			LOG_AND_THROW("Invalid date argument:" << node.first, std::invalid_argument);
+		}
 
-			[[maybe_unused]] auto [elem, inserted] = map.emplace(pt, node.second.get_value<double>());
-			(void)elem;
-			if (!inserted)
-			{
-				// FIXME
-				throw std::exception();
-			}
+		[[maybe_unused]] auto [elem, inserted] = map.emplace(pt, node.second.get_value<double>());
+		(void)elem;
+		if (!inserted)
+		{
+			// FIXME
+			throw std::exception();
 		}
 	}
 }
