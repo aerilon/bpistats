@@ -141,10 +141,10 @@ main::parse_options(int argc, const char** argv)
 	this->desc.add_options()
 		("help", "this help message")
 		("range",
-			boost::program_options::value<std::vector<std::string>>()->notifier([this](const auto& arg){ this->range_option_notifier(arg); }),
+			boost::program_options::value<std::vector<std::string>>()->multitoken()->notifier([this](const auto& arg){ this->range_option_notifier(arg); }),
 			"date range to check. Multiple ranges can be given.\nformat expected: YYYY-MM-DD,YYYY-MM-DD")
 		("file",
-			boost::program_options::value<std::vector<std::string>>()->notifier([this](const auto& arg){ this->file_option_notifier(arg); }),
+			boost::program_options::value<std::vector<std::string>>()->multitoken()->notifier([this](const auto& arg){ this->file_option_notifier(arg); }),
 			"JSON file to parse, must match coindesk historical close API. Multiple file can be given.");
 
 	auto parsed = boost::program_options::command_line_parser(argc, argv)
