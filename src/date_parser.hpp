@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace bpi
@@ -9,26 +10,11 @@ namespace bpi
 class date_parser
 {
 public:
-	date_parser(const std::string& format)
-	{
-		// XXX al - pointer freed by std::~locale()
-		this->ss.imbue(std::locale(std::locale(),
-		    new boost::posix_time::time_input_facet(format.c_str())));
-	}
+	date_parser(const std::string&);
 
-	std::pair<bool, boost::posix_time::ptime>
-	operator()(const std::string& text)
-	{
-		boost::posix_time::ptime pt;
+	std::pair<bool, boost::posix_time::ptime> operator()(const std::string&);
 
-		this->ss.clear();
-		this->ss << text;
-
-		ss >> pt;
-
-		return std::make_pair(!pt.is_not_a_date_time(), pt);
-	}
-
+	void format(const std::string&);
 private:
 	std::stringstream ss;
 };
