@@ -2,72 +2,54 @@
 #include <string>
 #include <iostream>
 
+#if __has_include("experimental/filesystem")
+#include <experimental/filesystem>
+namespace std
+{
+	namespace filesystem = experimental::filesystem;
+}
+#elif __has_include("filesystem")
+#include <filesystem>
+#elif __has_include("boost/filesystem.hpp")
+#include <boost/filesystem.hpp>
+namespace std
+{
+	namespace filesystem = ::boost::filesystem;
+}
+#endif
+
+#include <boost/asio/io_service.hpp>
+
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+#include <main.hpp>
+
 namespace
 {
+	const std::string COINDESK_HISTORICAL_CLOSE_JSON_API("https://api.coindesk.com/v1/bpi/historical/close.json");
 	const std::string COINDESK_FIRST_RECORD("2010-07-17");
 }
 
-class Main
+namespace bpi
 {
-public:
-	Main(int, const char**);
-	void operator()();
 
-private:
-	void parse_options(int, const char** argv);
-
-	static void check_range_options(const std::vector<std::string>&);
-	static void check_file_options(const std::vector<std::string>&);
-
-	boost::program_options::options_description desc;
-	boost::program_options::variables_map vm;
-};
-
-Main::Main(int argc, const char** argv) :
-	desc("Allowed options")
+main::main(int argc, const char** argv) :
+	desc("Allowed options"),
+	parser("%Y-%m-%d")
 {
 	this->parse_options(argc, argv);
 }
 
-#include <sstream>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 void
-Main::check_range_options(const std::vector<std::string>& ranges)
+main::range_option_notifier(const std::vector<std::string>& ranges)
 {
-	class date_parser
-	{
-	public:
-		date_parser(const std::string& format)
-		{
-			// XXX al - pointer freed by std::~locale()
-			this->ss.imbue(std::locale(std::locale(),
-			    new boost::posix_time::time_input_facet(format.c_str())));
-		}
 
-		std::pair<bool, boost::posix_time::ptime>
-		operator()(const std::string& text)
-		{
-			boost::posix_time::ptime pt;
-
-			this->ss.clear();
-			this->ss << text;
-
-			ss >> pt;
-
-			return std::make_pair(!pt.is_not_a_date_time(), pt);
-		}
-
-	private:
-		std::stringstream ss;
-	};
-	date_parser parse("%Y-%m-%d");
-
-	[[maybe_unused]] auto [ok, coindesk_fist_record] = parse(COINDESK_FIRST_RECORD);
+	[[maybe_unused]] auto [ok, coindesk_fist_record] = this->parser(COINDESK_FIRST_RECORD);
 	(void)ok; // XXX al - previous attributes only works in gcc >7.2
 
 	auto log_and_throw = [](const std::string& message, const std::string& range)
@@ -88,43 +70,30 @@ Main::check_range_options(const std::vector<std::string>& ranges)
 			log_and_throw("Missing comma separator", range);
 		}
 
-		auto [begin_ok, begin] = parse(range.substr(0, comma));
-		auto [end_ok, end] = parse(range.substr(comma + 1, std::string::npos));
-		if (!begin_ok || !end_ok)
+		auto [from_ok, from] = this->parser(range.substr(0, comma));
+		auto [to_ok, to] = this->parser(range.substr(comma + 1, std::string::npos));
+		if (!from_ok || !to_ok)
 		{
 			log_and_throw("Error raised during date conversion", range);
 		}
 
-		if (end < begin)
+		if (to < from)
 		{
 			log_and_throw("Range ends before it begins", range);
 		}
 
-		if (begin < coindesk_fist_record)
+		if (from < coindesk_fist_record)
 		{
 			log_and_throw("First record asked predate Coindesk first record", range);
 		}
+
+		this->online_records.emplace_back(COINDESK_HISTORICAL_CLOSE_JSON_API,
+		    from, to);
 	}
 }
 
-#if __has_include("experimental/filesystem")
-#include <experimental/filesystem>
-namespace std
-{
-	namespace filesystem = experimental::filesystem;
-}
-#elif __has_include("filesystem")
-#include <filesystem>
-#elif __has_include("boost/filesystem.hpp")
-#include <boost/filesystem.hpp>
-namespace std
-{
-	namespace filesystem = ::boost::filesystem;
-}
-#endif
-
 void
-Main::check_file_options(const std::vector<std::string>& files)
+main::file_option_notifier(const std::vector<std::string>& files)
 {
 
 	for (auto& file : files)
@@ -135,19 +104,46 @@ Main::check_file_options(const std::vector<std::string>& files)
 			      boost::program_options::validation_error::invalid_option_value,
 			      "--file", file);
 		}
+
+		boost::property_tree::ptree root;
+
+		boost::property_tree::read_json(file, root);
+
+		auto& collection = this->file_records.emplace_back(file);
+		auto& map = collection.get();
+
+		auto data = root.get_child("bpi");
+
+		for(const auto& node : data)
+		{
+			auto [ok, pt] = this->parser(node.first);
+			if (!ok)
+			{
+				// FIXME
+				throw std::exception();
+			}
+
+			[[maybe_unused]] auto [elem, inserted] = map.emplace(pt, node.second.get_value<double>());
+			(void)elem;
+			if (!inserted)
+			{
+				// FIXME
+				throw std::exception();
+			}
+		}
 	}
 }
 
 void
-Main::parse_options(int argc, const char** argv)
+main::parse_options(int argc, const char** argv)
 {
 	this->desc.add_options()
 		("help", "this help message")
 		("range",
-			boost::program_options::value<std::vector<std::string>>()->notifier(&Main::check_range_options),
+			boost::program_options::value<std::vector<std::string>>()->notifier([this](const auto& arg){ this->range_option_notifier(arg); }),
 			"date range to check. Multiple ranges can be given.\nformat expected: YYYY-MM-DD,YYYY-MM-DD")
 		("file",
-			boost::program_options::value<std::vector<std::string>>()->notifier(&Main::check_file_options),
+			boost::program_options::value<std::vector<std::string>>()->notifier([this](const auto& arg){ this->file_option_notifier(arg); }),
 			"JSON file to parse, must match coindesk historical close API. Multiple file can be given.");
 
 	auto parsed = boost::program_options::command_line_parser(argc, argv)
@@ -160,7 +156,7 @@ Main::parse_options(int argc, const char** argv)
 }
 
 void
-Main::operator()()
+main::operator()()
 {
 	if (this->vm.count("help"))
 	{
@@ -168,12 +164,11 @@ Main::operator()()
 		return;
 	}
 
-	if (this->vm.count("file"))
+	boost::asio::io_service io_service;
+
+	for (auto& records : this->file_records)
 	{
-		for (auto& file : this->vm["file"].as<std::vector<std::string>>())
-		{
-			(void)file;
-		}
+		//io_service.post()
 	}
 
 	if (this->vm.count("range"))
@@ -183,6 +178,10 @@ Main::operator()()
 			(void)range;
 		}
 	}
+
+	io_service.run();
+}
+
 }
 
 int
@@ -190,7 +189,7 @@ main(int argc, const char** argv)
 {
 	try
 	{
-		Main(argc, argv)();
+		bpi::main(argc, argv)();
 	}
 	catch (std::exception &e)
 	{

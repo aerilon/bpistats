@@ -26,12 +26,15 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 project(bpistats)
 
+include_directories(${PROJECT_SOURCE_DIR}/src)
+
 file(GLOB SOURCES src/*.cpp src/*.hpp)
 
 add_executable(bpistats ${SOURCES})
 
 target_link_libraries(bpistats
-	boost_program_options)
+	boost_program_options
+	boost_system)
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpistats
