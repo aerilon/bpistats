@@ -141,18 +141,21 @@ main::populate_records(const boost::property_tree::ptree& root,
 
 	for (const auto& node : data)
 	{
-		auto [ok, pt] = this->parser(node.first);
+		auto key = node.first;
+		auto [ok, pt] = this->parser(key);
 		if (!ok)
 		{
-			LOG_AND_THROW("Invalid date argument:" << node.first, std::invalid_argument);
+			LOG_AND_THROW("Invalid date argument:" << key,
+			    std::invalid_argument);
 		}
 
-		[[maybe_unused]] auto [elem, inserted] = map.emplace(pt, node.second.get_value<double>());
-		(void)elem;
+		auto value = node.second.get_value<double>();
+		[[maybe_unused]] auto [elem, inserted] = map.emplace(pt, value);
+		(void)elem; // XXX see above
 		if (!inserted)
 		{
-			// FIXME
-			throw std::exception();
+			LOG_AND_THROW("Record already exists: " << value,
+			    std::invalid_argument);
 		}
 	}
 }
