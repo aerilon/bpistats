@@ -22,6 +22,7 @@ find_package(
 	filesystem
 	program_options
 	system
+	unit_test_framework
 )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -53,6 +54,12 @@ if (UNIX AND NOT APPLE)
 		rt)
 endif()
 
-add_subdirectory(tests)
+# Tests
+file(GLOB TEST_SOURCES tests/*.cpp tests/*.hpp)
+
+add_executable(bpitests ${TEST_SOURCES})
+
+target_link_libraries(bpitests
+	bpicore)
 
 enable_testing()
