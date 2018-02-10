@@ -28,6 +28,13 @@ find_package(
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
+# Check for OpenSSL
+set(OPENSSL_USE_STATIC_LIBS ON)
+
+find_package(OpenSSL REQUIRED)
+
+include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR})
+
 # Check support for interprocedural optimization (aka. LTO)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_supported OUTPUT error)
@@ -44,7 +51,9 @@ list(REMOVE_ITEM SOURCES "${BPISTATS_SOURCES}")
 add_library(bpicore STATIC ${SOURCES})
 
 
-target_link_libraries(bpicore ${Boost_LIBRARIES})
+target_link_libraries(bpicore
+	${OPENSSL_LIBRARIES}
+	${Boost_LIBRARIES})
 
 # Main executable
 add_executable(bpistats "${BPISTATS_SOURCES}")
