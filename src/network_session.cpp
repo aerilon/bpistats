@@ -116,12 +116,36 @@ session::on_write(boost::system::error_code ec, std::size_t)
 		return;
 	}
 
+	this->response_parser.emplace();
+
+	this->on_chunk_body_trampoline.emplace(
+		[self = this->shared_from_this()](auto remain, auto body, auto ec)
+		{
+			return self->on_chunk_body(remain, body, ec);
+		});
+
+	this->response_parser->on_chunk_body(*this->on_chunk_body_trampoline);
+
 	// Receive the HTTP response
-	boost::beast::http::async_read(this->stream, this->buffer, this->response,
+	boost::beast::http::async_read(this->stream, this->buffer, *this->response_parser,
 		[self = this->shared_from_this()](auto error_code, auto size_transfered)
 		{
 			self->on_read(error_code, size_transfered);
 		});
+}
+
+size_t
+session::on_chunk_body(uint64_t, boost::string_view body, boost::system::error_code& ec)
+{
+	if (ec)
+	{
+		this->handler(ec, "");
+		return 0;
+	}
+
+	this->ss << body;
+
+	return body.size();
 }
 
 void
@@ -133,9 +157,10 @@ session::on_read(boost::system::error_code ec, std::size_t)
 		return;
 	}
 
-	std::stringstream ss;
-	ss << this->response;
-	this->handler(ec, ss.str());
+	this->response_parser.reset();
+	this->on_chunk_body_trampoline.reset();
+
+	this->handler(ec, this->ss.str());
 
 	// Gracefully close the stream
 	this->stream.async_shutdown(
@@ -148,7 +173,8 @@ session::on_read(boost::system::error_code ec, std::size_t)
 void
 session::on_shutdown(boost::system::error_code ec)
 {
-	if (ec == boost::asio::error::eof)
+	if (ec == boost::asio::error::eof ||
+	    ec == boost::asio::ssl::error::stream_truncated)
 	{
 		// Rationale:
 		// http://stackoverflow.com/questions/25587403/boost-asio-ssl-async-shutdown-always-finishes-with-an-error

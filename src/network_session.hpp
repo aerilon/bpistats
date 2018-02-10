@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <optional>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/connect.hpp>
@@ -15,6 +16,7 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/beast/http/parser.hpp>
 
 namespace bpi::network
 {
@@ -49,6 +51,7 @@ private:
 	void on_connect(boost::system::error_code ec);
 	void on_handshake(boost::system::error_code ec);
 	void on_write(boost::system::error_code ec, std::size_t bytes_transferred);
+	size_t on_chunk_body(uint64_t, boost::string_view body, boost::system::error_code& ec);
 	void on_read(boost::system::error_code ec, std::size_t bytes_transferred);
 	void on_shutdown(boost::system::error_code ec);
 
@@ -59,7 +62,15 @@ private:
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> stream;
 	boost::beast::flat_buffer buffer; // (Must persist between reads)
 	boost::beast::http::request<boost::beast::http::empty_body> request;
-	boost::beast::http::response<boost::beast::http::string_body> response;
+
+	std::optional<boost::beast::http::response_parser<boost::beast::http::dynamic_body>> response_parser;
+	std::stringstream ss; // the chunk buffer
+
+	// XXX al -
+	// boost::beast::http::response_parser::on_chunk_cb takes a *reference*
+	// to a callback, so we have to manage its lifetime manually. This is a
+	// *major* pain :-/
+	std::optional<std::function<size_t(uint64_t, boost::string_view, boost::system::error_code&)>> on_chunk_body_trampoline;
 };
 
 }
