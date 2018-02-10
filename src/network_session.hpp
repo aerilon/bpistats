@@ -48,7 +48,7 @@ get_context()
 
 	ctx.set_default_verify_paths();
 
-	return std::move(ctx);
+	return ctx;
 }
 
 }
