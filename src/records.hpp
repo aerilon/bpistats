@@ -4,6 +4,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include <date_printer.hpp>
+
 namespace bpi::records
 {
 
@@ -12,14 +14,19 @@ using map_t = std::map<boost::posix_time::ptime, double>;
 class map
 {
 public:
+	map() :
+		printer("%Y-%m-%d")
+	{
+	}
+
 	operator map_t&()
 	{
-		return this->map;
+		return this->internal_map;
 	}
 
 	operator const map_t&() const
 	{
-		return this->map;
+		return this->internal_map;
 	}
 
 	operator boost::property_tree::ptree() const
@@ -32,16 +39,17 @@ public:
 	{
 		boost::property_tree::ptree pt;
 
-		auto& from = *(this->map.begin());
-		auto& to = *(this->map.rbegin());
+		auto& from = *(this->internal_map.begin());
+		auto& to = *(this->internal_map.rbegin());
 
-		pt.put("from", from.first);
-		pt.put("to", to.first);
+		pt.put("from", this->printer(from.first));;
+		pt.put("to", this->printer(to.first));
 
 		return pt;
 	};
 private:
-	map_t map;
+	map_t internal_map;
+	bpi::date_printer printer;
 };
 
 class file : public map

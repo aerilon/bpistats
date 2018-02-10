@@ -3,6 +3,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include <records.hpp>
+#include <date_printer.hpp>
 
 namespace bpi::statistics
 {
@@ -16,6 +17,7 @@ public:
 
 private:
 	const bpi::records::map_t& map;
+	bpi::date_printer printer;
 };
 
 }

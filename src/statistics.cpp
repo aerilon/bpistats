@@ -8,7 +8,8 @@ namespace bpi::statistics
 {
 
 engine::engine(const bpi::records::map_t& map) :
-	map(map)
+	map(map),
+	printer("%Y-%m-%d")
 {
 }
 
@@ -83,9 +84,9 @@ engine::run()
 	boost::property_tree::ptree statistics;
 
 	statistics.put("lowest.price", lowest);
-	statistics.put("lowest.date", lowest_pt);
+	statistics.put("lowest.date", this->printer(lowest_pt));
 	statistics.put("highest.price", highest);
-	statistics.put("highest.date", highest_pt);
+	statistics.put("highest.date", this->printer(highest_pt));
 	statistics.put("stddev", stddev);
 	statistics.put("average", mean);
 	statistics.put("median", median);
