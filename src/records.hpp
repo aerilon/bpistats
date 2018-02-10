@@ -108,15 +108,22 @@ public:
 	}
 
 	std::string
-	get_target()
+	get_full_target()
 	{
-		return this->target;
-	}
+		std::stringstream ss;
 
-	std::pair<boost::posix_time::ptime, boost::posix_time::ptime>
-	get_range()
-	{
-		return std::make_pair(this->from, this->to);
+		ss.imbue(std::locale(std::locale::classic(),
+		    new boost::posix_time::time_facet("%Y-%m-%d")));
+
+		ss << this->target;
+		ss << "?";
+		ss << "start=";
+		ss << this->from;
+		ss << "&";
+		ss << "end=";
+		ss << this->to;
+
+		return ss.str();
 	}
 
 private:

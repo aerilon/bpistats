@@ -240,31 +240,15 @@ main::operator()()
 
 	for (auto& records : this->online_records)
 	{
-		std::stringstream ss;
-
-		ss.imbue(std::locale(std::locale::classic(),
-		    new boost::posix_time::time_facet("%Y-%m-%d")));
-
-		std::string host = records.get_host();
-
-		auto range = records.get_range();
-
-		ss << records.get_target();
-		ss << "?";
-		ss << "start=";
-		ss << range.first;
-		ss << "&";
-		ss << "end=";
-		ss << range.second;
-
-		std::string target = ss.str();
+		auto host = records.get_host();
+		auto target = records.get_full_target();
 
 		auto session = std::make_shared<bpi::network::session>(this->io_service, this->ssl_ctx,
 			[&](auto ec, auto message)
 			{
 				if (ec)
 				{
-					std::cerr << "ERROR: retrieving `" << target << "': " << ec.message() << std::endl;
+					std::cerr << "ERROR: retrieving `" << host << target << "': " << ec.message() << std::endl;
 					return;
 				}
 
