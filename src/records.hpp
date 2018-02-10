@@ -12,10 +12,19 @@ using map_t = std::map<boost::posix_time::ptime, double>;
 class map
 {
 public:
-	map_t&
-	get()
+	operator map_t&()
 	{
 		return this->map;
+	}
+
+	operator const map_t&() const
+	{
+		return this->map;
+	}
+
+	operator boost::property_tree::ptree() const
+	{
+		return this->describe();
 	}
 
 	boost::property_tree::ptree

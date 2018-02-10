@@ -126,7 +126,7 @@ main::file_option_notifier(const std::vector<std::string>& files)
 		auto& record = this->file_records.emplace_back(file);
 
 		// parse the JSON and populate our internal representation.
-		this->populate_records(this->parse_json(file), record.get());
+		this->populate_records(this->parse_json(file), record);
 	}
 }
 
@@ -208,19 +208,24 @@ main::operator()()
 		return;
 	}
 
+	auto statistics_runner = [&](const bpi::records::map& record)
+		{
+		bpi::statistics::engine engine(record);
+
+		auto statistics = engine.run();
+
+		boost::property_tree::ptree results = record;
+
+		results.put_child("statistics", statistics);
+
+		this->print(results);
+		};
+
 	for (auto& records : this->file_records)
 	{
 		auto worker = [&]()
 			{
-			bpi::statistics::engine engine(records.get());
-
-			auto statistics = engine.run();
-
-			auto results = records.describe();
-
-			results.put_child("statistics", statistics);
-
-			this->print(results);
+			statistics_runner(records);
 			};
 
 		this->io_service.post(worker);
