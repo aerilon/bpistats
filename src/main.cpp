@@ -123,9 +123,12 @@ main::file_option_notifier(const std::vector<std::string>& files)
 		// Integrity check.
 		if (!std::filesystem::exists(file) && !std::filesystem::is_regular_file(file))
 		{
+			std::stringstream ss;
+			ss << file << ": no such regular file";
+			std::cerr << ss.str() << std::endl;
 			throw boost::program_options::validation_error(
 			      boost::program_options::validation_error::invalid_option_value,
-			      "--file", file);
+			      "--file", ss.str());
 		}
 
 		// create the record, ...
