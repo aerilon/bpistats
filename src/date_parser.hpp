@@ -13,8 +13,6 @@ public:
 	date_parser(const std::string&);
 
 	std::pair<bool, boost::posix_time::ptime> operator()(const std::string&);
-
-	void format(const std::string&);
 private:
 	std::stringstream ss;
 };
