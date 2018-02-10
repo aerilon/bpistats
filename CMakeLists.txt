@@ -54,6 +54,14 @@ add_library(bpicore STATIC ${SOURCES})
 target_link_libraries(bpicore
 	${OPENSSL_LIBRARIES}
 	${Boost_LIBRARIES})
+if (UNIX AND NOT APPLE)
+	target_link_libraries(bpicore
+		dl
+		z
+		stdc++fs
+		pthread
+		rt)
+endif()
 
 # Main executable
 add_executable(bpistats "${BPISTATS_SOURCES}")
@@ -64,13 +72,7 @@ if (ipo_supported)
 	set_property(TARGET bpistats PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-
 if (UNIX AND NOT APPLE)
-	target_link_libraries(bpistats
-		stdc++fs
-		pthread
-		rt)
-
 	add_custom_command(
 		TARGET bpistats
 		POST_BUILD
