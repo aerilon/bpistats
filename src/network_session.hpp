@@ -5,7 +5,22 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#if __has_include("optional")
 #include <optional>
+//#elif __has_include("experimental/optional")
+// XXX al -
+//
+// Do *not* include <experimental/optional> on purpose. Apple LLVM version 9.0.0
+// (clang-900.0.39.2)) has a non-conforming version missing
+// std::optional::reset().
+#else
+#include <boost/optional.hpp>
+namespace std
+{
+	template<typename T>
+	using optional = ::boost::optional<T>;
+};
+#endif
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/connect.hpp>
