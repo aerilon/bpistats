@@ -24,11 +24,13 @@ namespace std
 #include <boost/property_tree/json_parser.hpp>
 
 #include <main.hpp>
+#include <network_session.hpp>
 #include <statistics.hpp>
 
 namespace
 {
-	const std::string COINDESK_HISTORICAL_CLOSE_JSON_API("https://api.coindesk.com/v1/bpi/historical/close.json");
+	const std::string COINDESK_HISTORICAL_CLOSE_JSON_API_HOST("api.coindesk.com");
+	const std::string COINDESK_HISTORICAL_CLOSE_JSON_API_TARGET("/v1/bpi/historical/close.json");
 	const std::string COINDESK_FIRST_RECORD("2010-07-17");
 }
 
@@ -53,6 +55,7 @@ namespace bpi
 {
 
 main::main(int argc, const char** argv) :
+	ssl_ctx(bpi::network::ssl::get_context()),
 	desc("Allowed options"),
 	parser("%Y-%m-%d")
 {
@@ -104,7 +107,10 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 		}
 
 		// create the record
-		this->online_records.emplace_back(COINDESK_HISTORICAL_CLOSE_JSON_API, from, to);
+		this->online_records.emplace_back(
+		    COINDESK_HISTORICAL_CLOSE_JSON_API_HOST,
+		    COINDESK_HISTORICAL_CLOSE_JSON_API_TARGET,
+		    from, to);
 	}
 }
 
@@ -231,12 +237,52 @@ main::operator()()
 		this->io_service.post(worker);
 	}
 
-	if (this->vm.count("range"))
+	for (auto& records : this->online_records)
 	{
-		for (auto& range : this->vm["range"].as<std::vector<std::string>>())
-		{
-			(void)range;
-		}
+		std::stringstream ss;
+
+		ss.imbue(std::locale(std::locale::classic(),
+		    new boost::posix_time::time_facet("%Y-%m-%d")));
+
+		std::string host = records.get_host();
+
+		auto range = records.get_range();
+
+		ss << records.get_target();
+		ss << "?";
+		ss << "start=";
+		ss << range.first;
+		ss << "&";
+		ss << "end=";
+		ss << range.second;
+
+		std::string target = ss.str();
+
+		auto session = std::make_shared<bpi::network::session>(this->io_service, this->ssl_ctx,
+			[&](auto ec, auto message)
+			{
+				if (ec)
+				{
+					std::cerr << "ERROR: retrieving `" << target << "': " << ec.message() << std::endl;
+					return;
+				}
+
+				std::stringstream ss;
+				ss << message;
+
+				// parse the JSON and populate our internal representation.
+				this->populate_records(this->parse_json(std::move(ss)), records);
+
+				// schedule our worker handler
+				auto worker = [&]()
+					{
+					statistics_runner(records);
+					};
+
+				this->io_service.post(worker);
+			});
+
+		session->run(host, "https", target);
 	}
 
 	this->io_service.run();

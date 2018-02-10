@@ -71,9 +71,11 @@ class online : public map
 {
 public:
 	online(const std::string& host,
+	    const std::string& target,
 	    const boost::posix_time::ptime& from,
 	    const boost::posix_time::ptime& to) :
 		host(host),
+		target(target),
 		from(from),
 		to(to)
 	{
@@ -85,13 +87,33 @@ public:
 		auto pt = map::describe();
 
 		pt.put("type", "online");
-		pt.put("host", host);
+		pt.put("host", this->host);
+		pt.put("target", this->target);
 
 		return pt;
 	}
 
+	std::string
+	get_host()
+	{
+		return this->host;
+	}
+
+	std::string
+	get_target()
+	{
+		return this->target;
+	}
+
+	std::pair<boost::posix_time::ptime, boost::posix_time::ptime>
+	get_range()
+	{
+		return std::make_pair(this->from, this->to);
+	}
+
 private:
 	const std::string host;
+	const std::string target;
 	const boost::posix_time::ptime from;
 	const boost::posix_time::ptime to;
 };

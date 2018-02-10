@@ -3,6 +3,7 @@
 #include <mutex>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/asio/ssl/context.hpp>
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -31,6 +32,7 @@ private:
 	void print(const boost::property_tree::ptree&);
 
 	boost::asio::io_service io_service;
+	boost::asio::ssl::context ssl_ctx;
 
 	boost::program_options::options_description desc;
 	boost::program_options::variables_map vm;
