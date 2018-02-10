@@ -14,23 +14,25 @@
  * write a generic set of test for the possible multiple implementation of the
  * statistics engine.
  */
-struct fixture {
-	fixture() :
-		records(this->generic_map)
-	{
-		this->records.emplace(this->parser("2018-01-01").second, 1.0);
-		this->records.emplace(this->parser("2018-01-02").second, 2.0);
-		this->records.emplace(this->parser("2018-01-03").second, 3.0);
-		this->records.emplace(this->parser("2018-01-04").second, 4.0);
-		this->records.emplace(this->parser("2018-01-05").second, 5.0);
-	}
+namespace
+{
+	struct fixture {
+		fixture() :
+			records(this->generic_map)
+		{
+			this->records.emplace(this->parser("2018-01-01").second, 1.0);
+			this->records.emplace(this->parser("2018-01-02").second, 2.0);
+			this->records.emplace(this->parser("2018-01-03").second, 3.0);
+			this->records.emplace(this->parser("2018-01-04").second, 4.0);
+			this->records.emplace(this->parser("2018-01-05").second, 5.0);
+		}
 
-	bpi::date_parser parser;
+		bpi::date_parser parser;
 
-	bpi::records::map generic_map;
-	bpi::records::map_t& records;
-
-};
+		bpi::records::map generic_map;
+		bpi::records::map_t& records;
+	};
+}
 
 BOOST_FIXTURE_TEST_SUITE( statistics, fixture )
 
