@@ -2,10 +2,6 @@
 
 #include <network_session.hpp>
 
-namespace
-{
-}
-
 BOOST_AUTO_TEST_CASE( network_session )
 {
 	// XXX al - Load from file ...
