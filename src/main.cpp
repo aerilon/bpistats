@@ -122,16 +122,23 @@ main::file_option_notifier(const std::vector<std::string>& files)
 			      "--file", file);
 		}
 
-		// Load the JSON file, ...
-		boost::property_tree::ptree root;
-		boost::property_tree::read_json(file, root);
-
 		// create the record, ...
 		auto& record = this->file_records.emplace_back(file);
 
-		// and populate our internal representation.
-		this->populate_records(root, record.get());
+		// parse the JSON and populate our internal representation.
+		this->populate_records(this->parse_json(file), record.get());
 	}
+}
+
+template<typename T>
+boost::property_tree::ptree
+main::parse_json(T t)
+{
+	boost::property_tree::ptree root;
+
+	boost::property_tree::read_json(t, root);
+
+	return root;
 }
 
 void

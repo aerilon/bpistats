@@ -25,6 +25,7 @@ private:
 	void range_option_notifier(const std::vector<std::string>&);
 	void file_option_notifier(const std::vector<std::string>&);
 
+	template<typename T> boost::property_tree::ptree parse_json(T t);
 	void populate_records(const boost::property_tree::ptree&, bpi::records::map_t&);
 
 	void print(const boost::property_tree::ptree&);
