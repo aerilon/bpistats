@@ -56,8 +56,7 @@ namespace bpi
 
 main::main(int argc, const char** argv) :
 	ssl_ctx(bpi::network::ssl::get_context()),
-	desc("Allowed options"),
-	parser("%Y-%m-%d")
+	desc("Allowed options")
 {
 	this->parse_options(argc, argv);
 }

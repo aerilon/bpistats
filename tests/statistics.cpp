@@ -16,7 +16,6 @@
  */
 struct fixture {
 	fixture() :
-		parser("%Y-%m-%d"),
 		records(this->generic_map)
 	{
 		this->records.emplace(this->parser("2018-01-01").second, 1.0);

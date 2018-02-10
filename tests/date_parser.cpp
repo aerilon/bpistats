@@ -4,7 +4,7 @@
 
 BOOST_AUTO_TEST_CASE( date_parser )
 {
-	bpi::date_parser parser("%Y-%m-%d");
+	bpi::date_parser parser;
 
 	{
 		// Valid

@@ -5,6 +5,11 @@
 namespace bpi
 {
 
+date_parser::date_parser():
+	date_parser("%Y-%m-%d")
+{
+}
+
 date_parser::date_parser(const std::string& format)
 {
 	// XXX al - pointer freed by std::~locale()

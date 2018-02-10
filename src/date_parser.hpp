@@ -10,6 +10,7 @@ namespace bpi
 class date_parser
 {
 public:
+	date_parser();
 	date_parser(const std::string&);
 
 	std::pair<bool, boost::posix_time::ptime> operator()(const std::string&);
