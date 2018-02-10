@@ -42,6 +42,8 @@ private:
 	std::vector<bpi::records::file> file_records;
 	std::vector<bpi::records::online> online_records;
 
+	bool minify_output;
+
 	std::mutex print_lock;
 };
 

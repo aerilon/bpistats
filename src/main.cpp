@@ -181,6 +181,9 @@ main::parse_options(int argc, const char** argv)
 {
 	this->desc.add_options()
 		("help", "this help message")
+		("minify",
+			boost::program_options::bool_switch(&this->minify_output)->default_value(false),
+			"minify output")
 		("range",
 			boost::program_options::value<std::vector<std::string>>()->multitoken()->notifier([this](const auto& arg){ this->range_option_notifier(arg); }),
 			"date range to check. Multiple ranges can be given.\nformat expected: YYYY-MM-DD,YYYY-MM-DD")
@@ -201,7 +204,7 @@ void
 main::print(const boost::property_tree::ptree& tree)
 {
 	std::stringstream ss;
-	boost::property_tree::write_json(ss, tree);
+	boost::property_tree::write_json(ss, tree, !this->minify_output);
 
 	std::lock_guard<std::mutex> lk(this->print_lock);
 	std::cout << ss.str() << std::endl;
