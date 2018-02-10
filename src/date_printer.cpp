@@ -5,20 +5,19 @@
 namespace bpi
 {
 
-date_printer::date_printer(const std::string& format)
+date_printer::date_printer(const std::string& format) :
+	locale(std::locale(), new boost::posix_time::time_facet(format.c_str()))
 {
-	// XXX al - pointer freed by std::~locale()
-	this->ss.imbue(std::locale(std::locale(),
-	    new boost::posix_time::time_facet(format.c_str())));
 }
 
 std::string
 date_printer::operator()(const boost::posix_time::ptime& pt) const
 {
-	this->ss.clear();
-	this->ss.str("");
+	std::stringstream ss;
 
-	this->ss << pt;
+	ss.imbue(this->locale);
+
+	ss << pt;
 
 	return ss.str();
 }

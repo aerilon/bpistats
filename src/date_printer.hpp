@@ -14,7 +14,7 @@ public:
 
 	std::string operator()(const boost::posix_time::ptime&) const;
 private:
-	mutable std::stringstream ss;
+	std::locale locale;
 };
 
 }
