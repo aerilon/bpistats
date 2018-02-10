@@ -18,6 +18,7 @@ date_parser::operator()(const std::string& text)
 	boost::posix_time::ptime pt;
 
 	this->ss.clear();
+	this->ss.str("");
 	this->ss << text;
 
 	ss >> pt;
