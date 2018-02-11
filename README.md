@@ -22,7 +22,7 @@ $ cmake ..
 $ make
 ```
 
-## Expected data format
+## Input
 
 Input shall conform to Coindesk closing API format.
 
@@ -51,35 +51,110 @@ The program returns multiple JSON string, one for each of the given input sets.
 Each record contains informations about the source of the data, the timespan
 covered. The statistics includes, over the requested timespan, the price's:
 
+ - count
  - maximum (and associated timestamp)
  - minimum (and associated timestamp)
- - mean
+ - average
  - median
- - variance
  - standard deviation
 
-Example:
+## Demo
+
 ```
+% ./bpistats --help
+Allowed options:
+  --help                this help message
+  --minify              minify output
+  --range arg           date range to check. Multiple ranges can be given.
+                        format expected: YYYY-MM-DD,YYYY-MM-DD
+  --file arg            JSON file to parse, must match coindesk historical
+                        close API. Multiple file can be given.
+
+% curl 'https://api.coindesk.com//v1/bpi/historical/close.json?start=2018-01-12&end=2018-02-21' > sample.0
+
+# Single file passed:
+% ./bpistats --file sample.0
 {
-    "from": "2015-Jul-17 00:00:00",
-    "to": "2018-Feb-08 00:00:00",
+    "from": "2018-01-12",
+    "to": "2018-02-09",
     "type": "file",
-    "filename": "out.1",
+    "filename": "sample.0",
     "statistics": {
         "lowest": {
-            "price": "209.132200000000011642",
-            "date": "2015-Aug-24 00:00:00"
+            "price": "6914.26000000000021828",
+            "date": "2018-02-05"
         },
         "highest": {
-            "price": "19343.0400000000008731",
-            "date": "2017-Dec-16 00:00:00"
+            "price": "14188.7849999999998545",
+            "date": "2018-01-13"
         },
-        "stddev": "3657.07128283781484979",
-        "average": "2325.58883038379530706",
-        "median": "687.308150000000011914",
-        "sample_size": "938"
+        "stddev": "1948.40109589134032586",
+        "average": "10650.3055034482756973",
+        "median": "11090.063799999999901",
+        "sample_size": "29"
     }
+}
 
+# Multiple files can be passed on the command line
+# [output shortened for clarity purpose]
+% curl 'https://api.coindesk.com//v1/bpi/historical/close.json?start=2018-01-01&end=2018-01-21' > sample.1
+% ./bpistats --file sample.0 sample.1
+{
+    "from": "2018-01-12",
+    "to": "2018-02-09",
+    "type": "file",
+    "filename": "sample.0",
+    "statistics": {
+[...]
+    }
+}
+
+{
+    "from": "2018-01-01",
+    "to": "2018-01-21",
+    "type": "file",
+    "filename": "sample.1",
+    "statistics": {
+[...]
+    }
+}
+
+# On top of that, one or multiple range to be fetched from CoinDesk API can be appended:
+# [output shortened for clarity purpose]
+% ./bpistats --file sample.0 sample.1 --range 2011-01-12,2012-02-21
+[...]
+
+{
+    "from": "2018-01-01",
+    "to": "2018-01-21",
+    "type": "file",
+    "filename": "sample.1",
+    "statistics": {
+[...]
+    }
+}
+
+{
+    "from": "2011-01-12",
+    "to": "2012-02-21",
+    "type": "online",
+    "host": "api.coindesk.com",
+    "target": "\/v1\/bpi\/historical\/close.json?start=2011-01-12&end=2012-02-21",
+    "statistics": {
+        "lowest": {
+            "price": "0.313000000000000000444",
+            "date": "2011-01-18"
+        },
+        "highest": {
+            "price": "29.6000000000000014211",
+            "date": "2011-06-08"
+        },
+        "stddev": "5.26287442331568498018",
+        "average": "5.80055147783251234209",
+        "median": "10.6550000000000002487",
+        "sample_size": "406"
+    }
+}
 ```
 
 ## Tested environment
@@ -87,6 +162,29 @@ Example:
  - OS X (with latest Xcode)
  - Fedora 27
  - Ubuntu 17.10
+
+If your build environment is not listed in the above or experience any
+difficulty, a complete docker image is available in the `build_env` root directory.
+
+## Docker build
+
+```
+% cd build_env/
+% sudo docker build --no-cache --tag bpistats_environment
+% sudo docker run -it --privileged bpistats_environment /bin/bash
+root@93b85156ae62% git clone https://github.com/aerilon/bpistats.git
+root@93b85156ae62% cd bpistats
+root@93b85156ae62% export BOOST_ROOT=/root/opt/boost
+root@93b85156ae62% mkdir obj
+root@93b85156ae62% cd obj
+root@93b85156ae62% cmake ..
+root@93b85156ae62% make
+```
+
+## Unit tests
+
+Unit tests can be run by executing the `bpitests` binary once the application is
+build;
 
 ## Caveats
 
@@ -99,3 +197,4 @@ Example:
  - enable multithreaded operations
  - check support for visual studio
  - configurable coindesk endpoint
+ - truncate price results to a meaningful decimal
