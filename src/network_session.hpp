@@ -5,9 +5,9 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#if __has_include("optional")
+#if __has_include(<optional>)
 #include <optional>
-//#elif __has_include("experimental/optional")
+//#elif __has_include(<experimental/optional>)
 // XXX al -
 //
 // Do *not* include <experimental/optional> on purpose. Apple LLVM version 9.0.0
