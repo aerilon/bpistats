@@ -65,7 +65,7 @@ void
 main::range_option_notifier(const std::vector<std::string>& ranges)
 {
 
-	[[maybe_unused]] auto [ok, coindesk_fist_record] = this->parser(COINDESK_FIRST_RECORD);
+	[[maybe_unused]] auto [ok, coindesk_first_record] = this->parser(COINDESK_FIRST_RECORD);
 	(void)ok; // XXX al - [[maybe_unused]] only works with structured bindings in gcc >7.2
 
 	// XXX slightly different than the above, mainly due to the different exception prototype
@@ -100,7 +100,7 @@ main::range_option_notifier(const std::vector<std::string>& ranges)
 			log_and_throw("Range ends before it begins", range);
 		}
 
-		if (from < coindesk_fist_record)
+		if (from < coindesk_first_record)
 		{
 			log_and_throw("First record asked predate Coindesk first record", range);
 		}
