@@ -36,9 +36,9 @@ engine::run()
 	sum_x2 = 0;
 
 	// Welford's method, requires only 1 pass
-	for (const auto& row : this->map)
+	for (const auto& [pt, price] : this->map)
 	{
-		long double x = row.second;
+		auto x = static_cast<long double>(price);
 
 		sum_x += x;
 
@@ -48,13 +48,13 @@ engine::run()
 		if (x > highest)
 		{
 			highest = x;
-			highest_pt = row.first;
+			highest_pt = pt;
 		}
 
 		if (x < lowest)
 		{
 			lowest = x;
-			lowest_pt = row.first;
+			lowest_pt = pt;
 		}
 
 		if (i > median_index)
