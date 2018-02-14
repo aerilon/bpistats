@@ -35,13 +35,16 @@ namespace
 }
 
 /*
- * There is no elegant way in C++ to pass a streamstream as a method parameter, short of having the
- * method accept a reference and have a cumbersome temorary to manipulate, ie. have the following
- * syntax:
+ * There is no elegant way in C++ to pass a streamstream as a method parameter, ie:
  *
  * fn("key: " << val << "key: << 1);
  *
- * thus we have to resort to a good old C macro.
+ * The closest way would be to have the method accept a reference, but then, we
+ * would have a cumbersome temporary to manipulate, ie.:
+ *
+ * fn(std::stringstream() << "key: " << val << "key: << 1);
+ *
+ * thus we resort to a good old C macro.
  */
 #define LOG_AND_THROW(msg, exception)			\
 {							\
