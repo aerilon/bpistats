@@ -18,8 +18,8 @@ engine::run()
 {
 	auto size = this->map.size();
 
-	int i = 1;
-	int median_index = size / 2;
+	size_t i = 1;
+	size_t median_index = size / 2;
 	if (size % 2)
 	{
 		median_index += 1;
