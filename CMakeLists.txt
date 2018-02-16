@@ -43,6 +43,10 @@ project(bpistats)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
+if (MSVC)
+	add_compile_options("/FIglobal.hpp")
+endif()
+
 set(BPISTATS_SOURCES "${PROJECT_SOURCE_DIR}/src/bpistats.cpp")
 
 file(GLOB SOURCES src/*.cpp src/*.hpp)
