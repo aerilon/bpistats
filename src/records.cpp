@@ -91,7 +91,7 @@ online::describe() const
 }
 
 std::string
-online::get_host()
+online::get_host() const
 {
 	return this->host;
 }
