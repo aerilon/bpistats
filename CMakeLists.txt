@@ -50,15 +50,26 @@ if (MSVC)
 	add_compile_options("/FIglobal.hpp")
 endif()
 
-set(BPISTATS_SOURCES "${PROJECT_SOURCE_DIR}/src/bpistats.cpp")
+set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
-file(GLOB SOURCES src/*.cpp src/*.hpp)
+set(BPISTATS_SOURCES "${SOURCE_DIR}/bpistats.cpp")
+
+file(GLOB SOURCES "${SOURCE_DIR}/*.cpp" "${SOURCE_DIR}/*.hpp")
 list(REMOVE_ITEM SOURCES "${BPISTATS_SOURCES}")
 
-string(TOLOWER "src/${CMAKE_SYSTEM_NAME}" PLATFORM_SOURCE_DIRECTORY)
-set(PLATFORM_SOURCE_DIRECTORY "${PROJECT_SOURCE_DIR}/${PLATFORM_SOURCE_DIRECTORY}")
-if (EXISTS "${PLATFORM_SOURCE_DIRECTORY}")
-	file(GLOB PLATFORM_SOURCES "${PLATFORM_SOURCE_DIRECTORY}/*.cpp")
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_SOURCE_DIR)
+set(PLATFORM_SOURCE_DIR "${SOURCE_DIR}/${PLATFORM_SOURCE_DIR}")
+if (EXISTS "${PLATFORM_SOURCE_DIR}")
+	file(GLOB PLATFORM_SOURCES "${PLATFORM_SOURCE_DIR}/*.cpp")
+
+	foreach(_platform_file ${PLATFORM_SOURCES})
+		string(FIND "${_platform_file}" "/" _last_path_separator REVERSE)
+		math(EXPR _last_path_separator "${_last_path_separator} + 1")
+		string(SUBSTRING "${_platform_file}" ${_last_path_separator} -1 _file)
+
+		list(REMOVE_ITEM SOURCES "${SOURCE_DIR}/${_file}")
+	endforeach()
+
 	list(APPEND SOURCES "${PLATFORM_SOURCES}")
 endif()
 
