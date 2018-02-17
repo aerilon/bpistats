@@ -4,6 +4,8 @@ enable_language(CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-g)
@@ -20,8 +22,9 @@ set(Boost_USE_STATIC_LIBS   ON)
 find_package(
         Boost "1.66.0"
 	REQUIRED COMPONENTS
-	filesystem
+	date_time
 	program_options
+	filesystem
 	system
 	unit_test_framework
 )
@@ -47,24 +50,49 @@ if (MSVC)
 	add_compile_options("/FIglobal.hpp")
 endif()
 
-set(BPISTATS_SOURCES "${PROJECT_SOURCE_DIR}/src/bpistats.cpp")
+set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
-file(GLOB SOURCES src/*.cpp src/*.hpp)
+set(BPISTATS_SOURCES "${SOURCE_DIR}/bpistats.cpp")
+
+file(GLOB SOURCES "${SOURCE_DIR}/*.cpp" "${SOURCE_DIR}/*.hpp")
 list(REMOVE_ITEM SOURCES "${BPISTATS_SOURCES}")
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" PLATFORM_SOURCE_DIR)
+set(PLATFORM_SOURCE_DIR "${SOURCE_DIR}/${PLATFORM_SOURCE_DIR}")
+if (EXISTS "${PLATFORM_SOURCE_DIR}")
+	file(GLOB PLATFORM_SOURCES "${PLATFORM_SOURCE_DIR}/*.cpp")
+
+	foreach(_platform_file ${PLATFORM_SOURCES})
+		string(FIND "${_platform_file}" "/" _last_path_separator REVERSE)
+		math(EXPR _last_path_separator "${_last_path_separator} + 1")
+		string(SUBSTRING "${_platform_file}" ${_last_path_separator} -1 _file)
+
+		list(REMOVE_ITEM SOURCES "${SOURCE_DIR}/${_file}")
+	endforeach()
+
+	list(APPEND SOURCES "${PLATFORM_SOURCES}")
+endif()
 
 add_library(bpicore STATIC ${SOURCES})
 
-
+# XXX al - automatic library detection is broken, expect boost from https://dl.bintray.com/boostorg/release/1.66.0/binaries/
 target_link_libraries(bpicore
+	${Boost_LIBRARIES}
 	${OPENSSL_LIBRARIES}
-	${Boost_LIBRARIES})
+)
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpicore
 		dl
 		z
 		stdc++fs
 		pthread
-		rt)
+		rt
+		)
+elseif (MSVC)
+	target_link_libraries(bpicore
+		legacy_stdio_definitions.lib # for missing __imp__* symbols
+		crypt32.lib # for missing __imp_Cert* symbols
+		)
 endif()
 
 # Main executable

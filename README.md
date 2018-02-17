@@ -162,7 +162,7 @@ Allowed options:
  - OS X (with latest Xcode): fully supported
  - Fedora 27: fully supported
  - Ubuntu 17.10: fully supported
- - Visual Studio: build, but requires a few manual changes (see msvc branch)
+ - Visual Studio 2017: fully supported
 
 If your build environment is not listed in the above or experience any
 difficulty, a complete docker image is available in the `build_env` root directory.
