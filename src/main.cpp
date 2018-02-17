@@ -133,11 +133,8 @@ main::file_option_notifier(const std::vector<std::string>& files)
 			      "--file", ss.str());
 		}
 
-		// create the record, ...
-		auto& record = this->file_records.emplace_back(file);
-
-		// parse the JSON and populate our internal representation.
-		this->populate_records(this->parse_json(file), record);
+		// create the record
+		this->file_records.emplace_back(file);
 	}
 }
 
@@ -277,6 +274,11 @@ main::operator()()
 
 	for (auto& records : this->file_records)
 	{
+		auto filename = records.get_filename();
+
+		// parse the JSON and populate our internal representation.
+		this->populate_records(this->parse_json(filename), records);
+
 		schedule_worker(records);
 	}
 

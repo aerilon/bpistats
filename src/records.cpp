@@ -64,6 +64,12 @@ file::describe() const
 	return pt;
 }
 
+std::string
+file::get_filename() const
+{
+	return this->filename;
+}
+
 /*
  * online
  */
