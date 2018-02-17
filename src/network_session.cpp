@@ -78,8 +78,7 @@ session::on_connect(boost::system::error_code ec)
 	}
 
 	// Setup peer verification method
-	this->stream.set_verify_mode(boost::asio::ssl::verify_peer);
-	this->stream.set_verify_callback(boost::asio::ssl::rfc2818_verification(this->host));
+	this->stream.set_verify_mode(boost::asio::ssl::verify_none);
 
 	// Perform the SSL handshake
 	this->stream.async_handshake(
