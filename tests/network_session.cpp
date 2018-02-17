@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <network_session.hpp>
+#include <platform.hpp>
 
 BOOST_AUTO_TEST_CASE( network_session )
 {
@@ -9,7 +10,7 @@ BOOST_AUTO_TEST_CASE( network_session )
 
 	boost::asio::io_service io_service;
 
-	auto ctx = bpi::network::ssl::get_context();
+	auto ctx = bpi::platform::ssl::get_default_context();
 
 	auto session = std::make_shared<bpi::network::session>(io_service, ctx,
 		[&](auto ec, auto message)

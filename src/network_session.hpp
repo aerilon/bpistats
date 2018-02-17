@@ -38,21 +38,6 @@ namespace bpi::network
 
 using handler_t = std::function<void(boost::system::error_code, const std::string& message)>;
 
-namespace ssl
-{
-
-inline boost::asio::ssl::context
-get_context()
-{
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
-
-	ctx.set_default_verify_paths();
-
-	return ctx;
-}
-
-}
-
 class session : public std::enable_shared_from_this<session>
 {
 public:

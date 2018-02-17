@@ -25,6 +25,7 @@ namespace std
 
 #include <main.hpp>
 #include <network_session.hpp>
+#include <platform.hpp>
 #include <statistics.hpp>
 
 namespace
@@ -58,7 +59,7 @@ namespace bpi
 {
 
 main::main(int argc, const char** argv) :
-	ssl_ctx(bpi::network::ssl::get_context()),
+	ssl_ctx(bpi::platform::ssl::get_default_context()),
 	desc("Allowed options")
 {
 	this->parse_options(argc, argv);
