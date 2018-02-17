@@ -45,7 +45,7 @@ public:
 
 	boost::property_tree::ptree describe() const;
 
-	std::string get_host();
+	std::string get_host() const;
 	std::string get_full_target() const;
 
 private:
