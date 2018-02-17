@@ -147,7 +147,24 @@ main::parse_json(T t)
 {
 	boost::property_tree::ptree root;
 
-	boost::property_tree::read_json(t, root);
+	try {
+		boost::property_tree::read_json(t, root);
+	}
+	catch (std::exception&)
+	{
+		if constexpr(std::is_same<T, std::string>::value)
+		{
+			std::cerr << "Unable to parse JSON file" << t << std::endl;
+		}
+		else if constexpr(std::is_same<T, std::stringstream>::value)
+		{
+			std::cerr << "Unable to parse JSON:" << std::endl << std::endl;
+			std::cerr << t.str() << std::endl;
+		}
+
+		boost::property_tree::ptree child;
+		root.put_child("bpi", child);
+	}
 
 	return root;
 }
@@ -236,14 +253,31 @@ main::operator()()
 		this->print(results);
 		};
 
-	for (auto& records : this->file_records)
+	auto schedule_worker = [&](const auto& records)
 	{
+		if (const bpi::records::map_t& map = records; map.size() == 0)
+		{
+			boost::property_tree::ptree results = records;
+
+			results.put("error", "No records to sample");
+
+			this->print(results);
+
+			return;
+		}
+
 		auto worker = [&]()
 			{
 			statistics_runner(records);
 			};
 
 		this->io_service.post(worker);
+
+	};
+
+	for (auto& records : this->file_records)
+	{
+		schedule_worker(records);
 	}
 
 	for (auto& records : this->online_records)
@@ -266,13 +300,7 @@ main::operator()()
 				// parse the JSON and populate our internal representation.
 				this->populate_records(this->parse_json(std::move(ss)), records);
 
-				// schedule our worker handler
-				auto worker = [&]()
-					{
-					statistics_runner(records);
-					};
-
-				this->io_service.post(worker);
+				schedule_worker(records);
 			});
 
 		session->run(host, "https", target);
