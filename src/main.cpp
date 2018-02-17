@@ -27,6 +27,11 @@ namespace std
 #include <network_session.hpp>
 #include <statistics.hpp>
 
+extern "C"
+{
+	int __imp___iob_func;
+}
+
 namespace
 {
 	const std::string COINDESK_HISTORICAL_CLOSE_JSON_API_HOST("api.coindesk.com");
