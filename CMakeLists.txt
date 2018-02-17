@@ -55,8 +55,14 @@ set(BPISTATS_SOURCES "${PROJECT_SOURCE_DIR}/src/bpistats.cpp")
 file(GLOB SOURCES src/*.cpp src/*.hpp)
 list(REMOVE_ITEM SOURCES "${BPISTATS_SOURCES}")
 
-add_library(bpicore STATIC ${SOURCES})
+string(TOLOWER "src/${CMAKE_SYSTEM_NAME}" PLATFORM_SOURCE_DIRECTORY)
+set(PLATFORM_SOURCE_DIRECTORY "${PROJECT_SOURCE_DIR}/${PLATFORM_SOURCE_DIRECTORY}")
+if (EXISTS "${PLATFORM_SOURCE_DIRECTORY}")
+	file(GLOB PLATFORM_SOURCES "${PLATFORM_SOURCE_DIRECTORY}/*.cpp")
+	list(APPEND SOURCES "${PLATFORM_SOURCES}")
+endif()
 
+add_library(bpicore STATIC ${SOURCES})
 
 # XXX al - automatic library detection is broken, expect boost from https://dl.bintray.com/boostorg/release/1.66.0/binaries/
 target_link_libraries(bpicore
