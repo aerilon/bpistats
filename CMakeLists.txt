@@ -62,8 +62,6 @@ add_library(bpicore STATIC ${SOURCES})
 target_link_libraries(bpicore
 	${Boost_LIBRARIES}
 	${OPENSSL_LIBRARIES}
-	legacy_stdio_definitions.lib # for missing __imp__* symbols
-	crypt32.lib # for missing __imp_Cert* symbols
 )
 if (UNIX AND NOT APPLE)
 	target_link_libraries(bpicore
@@ -71,7 +69,13 @@ if (UNIX AND NOT APPLE)
 		z
 		stdc++fs
 		pthread
-		rt)
+		rt
+		)
+elseif (MSVC)
+	target_link_libraries(bpicore
+		legacy_stdio_definitions.lib # for missing __imp__* symbols
+		crypt32.lib # for missing __imp_Cert* symbols
+		)
 endif()
 
 # Main executable
