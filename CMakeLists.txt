@@ -4,6 +4,8 @@ enable_language(CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-g)
@@ -20,6 +22,9 @@ set(Boost_USE_STATIC_LIBS   ON)
 find_package(
         Boost "1.66.0"
 	REQUIRED COMPONENTS
+	date_time
+	program_options
+	filesystem
 	system
 	unit_test_framework
 )
@@ -55,11 +60,7 @@ add_library(bpicore STATIC ${SOURCES})
 
 # XXX al - automatic library detection is broken, expect boost from https://dl.bintray.com/boostorg/release/1.66.0/binaries/
 target_link_libraries(bpicore
-	"$ENV{BOOST_ROOT}\\lib64-msvc-14.1\\libboost_date_time-vc141-mt-gd-x64-1_66.lib"
-	"$ENV{BOOST_ROOT}\\lib64-msvc-14.1\\libboost_program_options-vc141-mt-gd-x64-1_66.lib"
-	"$ENV{BOOST_ROOT}\\lib64-msvc-14.1\\libboost_filesystem-vc141-mt-gd-x64-1_66.lib"
-	"$ENV{BOOST_ROOT}\\lib64-msvc-14.1\\libboost_unit_test_framework-vc141-mt-gd-x64-1_66.lib"
-	"$ENV{BOOST_ROOT}\\lib64-msvc-14.1\\libboost_system-vc141-mt-gd-x64-1_66.lib"
+	${Boost_LIBRARIES}
 	${OPENSSL_LIBRARIES}
 	legacy_stdio_definitions.lib # for missing __imp__* symbols
 	crypt32.lib # for missing __imp_Cert* symbols
