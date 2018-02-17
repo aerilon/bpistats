@@ -31,6 +31,8 @@ public:
 	file(const std::string& filename);
 
 	boost::property_tree::ptree describe() const;
+
+	std::string get_filename() const ;
 private:
 	std::string filename;
 };
