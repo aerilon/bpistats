@@ -1,4 +1,5 @@
 #include <utility>
+#include <regex>
 
 #include <date_parser.hpp>
 
@@ -22,13 +23,21 @@ date_parser::operator()(const std::string& text)
 {
 	boost::posix_time::ptime pt;
 
+	std::regex regex("^([0-9]{4})-[0-9]{2}-[0-9]{2}$");
+	std::smatch match;
+
+	if (!std::regex_match(text, match, regex))
+	{
+		return { false, pt };
+	}
+
 	this->ss.clear();
 	this->ss.str("");
 	this->ss << text;
 
 	ss >> pt;
 
-	return std::make_pair(!pt.is_not_a_date_time(), pt);
+	return { !pt.is_not_a_date_time(), pt };
 }
 
 }
