@@ -18,6 +18,13 @@ BOOST_AUTO_TEST_CASE( date_parser )
 	}
 
 	{
+		// Invalid format
+		auto [ok, pt] = parser("20180101");
+		(void)pt;
+		BOOST_TEST(!ok);
+	}
+
+	{
 		// Valid
 		auto [ok, pt] = parser("1900-01-01");
 		BOOST_TEST(ok);
