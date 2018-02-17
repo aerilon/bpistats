@@ -20,3 +20,5 @@ RUN cd /root && \
 	./bootstrap.sh && \
 	./b2 --prefix=$HOME/opt/boost -j 8 install
 
+ENV BOOST_ROOT /root/opt/boost
+

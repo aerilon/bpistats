@@ -174,7 +174,6 @@ difficulty, a complete docker image is available in the `build_env` root directo
 % sudo docker run -it --privileged bpistats_environment /bin/bash
 root@93b85156ae62% git clone https://github.com/aerilon/bpistats.git
 root@93b85156ae62% cd bpistats
-root@93b85156ae62% export BOOST_ROOT=/root/opt/boost
 root@93b85156ae62% mkdir obj
 root@93b85156ae62% cd obj
 root@93b85156ae62% cmake ..
